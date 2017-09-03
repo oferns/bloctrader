@@ -3,6 +3,7 @@ const webpack = require('webpack');
 const merge = require('webpack-merge');
 const AotPlugin = require('@ngtools/webpack').AotPlugin;
 const CheckerPlugin = require('awesome-typescript-loader').CheckerPlugin;
+const glob = require('glob');
 
 module.exports = (env) => {
     // Configuration in common to both client-side and server-side bundles
@@ -22,8 +23,15 @@ module.exports = (env) => {
                 { test: /\.html$/, use: 'html-loader?minimize=false' },
                 {
                     test: /\.scss$/,
-                    exclude: /node_modules/,
-                    loaders: ['to-string-loader', 'css-loader', 'sass-loader'] // sass-loader not scss-loader
+                    use: [{
+                        loader: 'to-string-loader'
+                    },
+                    {
+                        loader: 'css-loader'
+                    },
+                    {
+                        loader: 'sass-loader',
+                    }] // sass-loader not scss-loader
                 },
                 { test: /\.(png|jpg|jpeg|gif|svg)$/, use: 'url-loader?limit=25000' }
             ]

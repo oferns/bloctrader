@@ -2,6 +2,8 @@ const path = require('path');
 const webpack = require('webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const merge = require('webpack-merge');
+const glob = require('glob');
+
 const treeShakableModules = [
     '@angular/animations',
     '@angular/common',
@@ -12,26 +14,24 @@ const treeShakableModules = [
     '@angular/platform-browser',
     '@angular/platform-browser-dynamic',
     '@angular/router',
-    '@angular/material',
-    '@angular/cdk',
+    //'@angular/material',
+    //'@angular/cdk',
     'hammerjs',
     'zone.js'
 ];
 const nonTreeShakableModules = [
     'es6-promise',
     'es6-shim',
-    'event-source-polyfill'
+    'event-source-polyfill',
+    '@angular/material',
+    '@angular/material/prebuilt-themes/indigo-pink.css',
+
 ];
 const allModules = treeShakableModules.concat(nonTreeShakableModules);
 
 module.exports = (env) => {
+    const extractCSS = new ExtractTextPlugin('vendor.css');
     const isDevBuild = !(env && env.prod);
-
-    const extractSass = new ExtractTextPlugin({
-        filename: "vendor.css",
-        disable: isDevBuild
-    });
-
     const sharedConfig = {
         stats: { modules: false },
         resolve: { extensions: ['.js'] },
@@ -46,6 +46,7 @@ module.exports = (env) => {
             library: '[name]_[hash]'
         },
         plugins: [
+            new webpack.ProvidePlugin({ $: 'jquery', jQuery: 'jquery' }), // Maps these identifiers to the jQuery package (because Bootstrap expects it to be a global variable)
             new webpack.ContextReplacementPlugin(/\@angular\b.*\b(bundles|linker)/, path.join(__dirname, './ClientApp')), // Workaround for https://github.com/angular/angular/issues/11580
             new webpack.ContextReplacementPlugin(/angular(\\|\/)core(\\|\/)@angular/, path.join(__dirname, './ClientApp')), // Workaround for https://github.com/angular/angular/issues/14898
             new webpack.IgnorePlugin(/^vertx$/) // Workaround for https://github.com/stefanpenner/es6-promise/issues/100
@@ -61,14 +62,11 @@ module.exports = (env) => {
         output: { path: path.join(__dirname, 'wwwroot', 'dist') },
         module: {
             rules: [
-                {
-                    test: /\.scss$/,
-                    exclude: /node_modules/,
-                    use: extractSass.extract({ use: ['raw-loader', 'css-loader', 'sass-loader'] }) // sass-loader not scss-loader
-                }],
+                { test: /\.css(\?|$)/, use: extractCSS.extract({ use: isDevBuild ? 'css-loader' : 'css-loader?minimize' }) }
+            ]
         },
         plugins: [
-            extractSass,
+            extractCSS,
             new webpack.DllPlugin({
                 path: path.join(__dirname, 'wwwroot', 'dist', '[name]-manifest.json'),
                 name: '[name]_[hash]'
@@ -87,12 +85,7 @@ module.exports = (env) => {
             libraryTarget: 'commonjs2',
         },
         module: {
-            rules: [
-                {
-                    test: /\.scss$/,
-                    exclude: /node_modules/,
-                    use: ['raw-loader', 'css-loader', 'sass-loader'] // sass-loader not scss-loader
-                }],
+            rules: [{ test: /\.css(\?|$)/, use: ['to-string-loader', isDevBuild ? 'css-loader' : 'css-loader?minimize'] }]
         },
         plugins: [
             new webpack.DllPlugin({

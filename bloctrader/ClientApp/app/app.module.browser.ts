@@ -3,6 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppModuleShared } from './app.module.shared';
 import { AppComponent } from './components/app/app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
+import 'hammerjs';
 
 @NgModule({
     bootstrap: [ AppComponent ],
