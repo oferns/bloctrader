@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
 
+
 @Component({
-    selector: 'nav-menu',
+    selector: 'nav-menu',    
     templateUrl: './navmenu.component.html',
-    styleUrls: ['./navmenu.component.css']
+    styleUrls: ['./navmenu.component.scss']
 })
 export class NavMenuComponent {
 }
