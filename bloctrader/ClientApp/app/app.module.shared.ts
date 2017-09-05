@@ -10,7 +10,14 @@ import { HomeComponent } from './components/home/home.component';
 import { FetchDataComponent } from './components/fetchdata/fetchdata.component';
 import { CounterComponent } from './components/counter/counter.component';
 
-import { MdButtonModule, MdMenuModule, MdIconModule } from '@angular/material';
+import {
+    MdButtonModule,
+    MdMenuModule,
+    MdIconModule,
+    MdToolbarModule,
+    MdSidenavModule,
+    MdTabsModule
+} from '@angular/material';
 
 @NgModule({
     declarations: [
@@ -27,6 +34,9 @@ import { MdButtonModule, MdMenuModule, MdIconModule } from '@angular/material';
         MdButtonModule,
         MdMenuModule,
         MdIconModule,
+        MdToolbarModule,
+        MdSidenavModule,
+        MdTabsModule,
         RouterModule.forRoot([
             { path: '', redirectTo: 'home', pathMatch: 'full' },
             { path: 'home', component: HomeComponent },

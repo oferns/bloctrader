@@ -6,6 +6,7 @@ import { enableProdMode, ApplicationRef, NgZone, ValueProvider } from '@angular/
 import { platformDynamicServer, PlatformState, INITIAL_CONFIG } from '@angular/platform-server';
 import { createServerRenderer, RenderResult } from 'aspnet-prerendering';
 import { AppModule } from './app/app.module.server';
+import { getTranslationProvider } from './app/i18n/i18n.provider';
 
 enableProdMode();
 
@@ -16,23 +17,26 @@ export default createServerRenderer(params => {
         { provide: 'BASE_URL', useValue: params.origin + params.baseUrl },
     ];
 
-    return platformDynamicServer(providers).bootstrapModule(AppModule).then(moduleRef => {
-        const appRef: ApplicationRef = moduleRef.injector.get(ApplicationRef);
-        const state = moduleRef.injector.get(PlatformState);
-        const zone = moduleRef.injector.get(NgZone);
+    return getTranslationProvider()
+        .then(provider => platformDynamicServer(providers).bootstrapModule(AppModule, { providers: provider }))
+        .then(moduleRef => {
 
-        return new Promise<RenderResult>((resolve, reject) => {
-            // zone.onError.subscribe((errorInfo: any) => reject(errorInfo));
-            appRef.isStable.first(isStable => isStable).subscribe(() => {
-                // Because 'onStable' fires before 'onError', we have to delay slightly before
-                // completing the request in case there's an error to report
-                setImmediate(() => {
-                    resolve({
-                        html: state.renderToString()
+            const appRef: ApplicationRef = moduleRef.injector.get(ApplicationRef);
+            const state = moduleRef.injector.get(PlatformState);
+            const zone = moduleRef.injector.get(NgZone);
+
+            return new Promise<RenderResult>((resolve, reject) => {
+                // zone.onError.subscribe((errorInfo: any) => reject(errorInfo));
+                appRef.isStable.first(isStable => isStable).subscribe(() => {
+                    // Because 'onStable' fires before 'onError', we have to delay slightly before
+                    // completing the request in case there's an error to report
+                    setImmediate(() => {
+                        resolve({
+                            html: state.renderToString()
+                        });
+                        moduleRef.destroy();
                     });
-                    moduleRef.destroy();
                 });
             });
         });
-    });
 });
